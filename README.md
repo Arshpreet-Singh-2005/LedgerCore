@@ -151,7 +151,7 @@ pytest tests/ -v
 
 ---
 
-## 🔌 API Reference
+##  API Reference
 
 Interactive Swagger UI documentation is available at `http://localhost:8000/docs` when the server is running.
 
