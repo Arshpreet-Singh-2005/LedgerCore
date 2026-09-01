@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏦 LedgerCore
+#  LedgerCore
 **ACID-Compliant Core Banking API**
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)
@@ -15,18 +15,18 @@ A production-grade REST API simulating a core banking backend. LedgerCore handle
 
 ---
 
-## 🚀 Key Features
+##  Key Features
 
-* **⚖️ Double-Entry Ledger** — Every financial movement creates immutable `DEBIT` and `CREDIT` records, ensuring a non-repudiable audit trail.
-* **🛡️ ACID Transactions** — Transfer operations are wrapped in atomic transaction blocks. If any step fails (e.g., validation, server crash), the entire operation rolls back.
-* **🚦 Concurrency Safe (Row-Level Locking)** — Utilizes `SELECT ... FOR UPDATE` with ordered ID locking to prevent race conditions (double-spending) and deadlocks during simultaneous transfers.
-* **🧮 Integer Currency Handling** — All balances are stored as integers (paise/cents) rather than floats to eliminate floating-point precision errors.
-* **🔑 Idempotency** — API supports `idempotency_key` checks on transfers, preventing duplicate transactions if a client retries a network request.
-* **🔒 JWT Authentication** — Secure stateless authentication routing ensuring users can only interact with their own accounts.
+* ** Double-Entry Ledger** — Every financial movement creates immutable `DEBIT` and `CREDIT` records, ensuring a non-repudiable audit trail.
+* ** ACID Transactions** — Transfer operations are wrapped in atomic transaction blocks. If any step fails (e.g., validation, server crash), the entire operation rolls back.
+* ** Concurrency Safe (Row-Level Locking)** — Utilizes `SELECT ... FOR UPDATE` with ordered ID locking to prevent race conditions (double-spending) and deadlocks during simultaneous transfers.
+* ** Integer Currency Handling** — All balances are stored as integers (paise/cents) rather than floats to eliminate floating-point precision errors.
+* ** Idempotency** — API supports `idempotency_key` checks on transfers, preventing duplicate transactions if a client retries a network request.
+* ** JWT Authentication** — Secure stateless authentication routing ensuring users can only interact with their own accounts.
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 The system is designed to handle concurrent transaction requests safely, ensuring no two requests can modify the same account balance simultaneously without waiting in a secure queue.
 
@@ -63,7 +63,7 @@ sequenceDiagram
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```text
 LedgerCore/
@@ -85,7 +85,7 @@ LedgerCore/
 
 ---
 
-## 🛠️ Database Schema
+##  Database Schema
 
 The schema is heavily normalized and designed for high financial integrity.
 
@@ -122,7 +122,7 @@ erDiagram
 
 ---
 
-## 💻 Local Setup (Docker)
+##  Local Setup (Docker)
 
 The easiest way to run LedgerCore is via Docker, which automatically spins up the FastAPI server alongside a fully configured PostgreSQL database.
 
@@ -140,7 +140,7 @@ docker compose up --build
 
 ---
 
-## 🧪 Running the Test Suite
+##  Running the Test Suite
 
 LedgerCore includes a comprehensive Pytest suite validating edge cases like insufficient funds, invalid account routing, and idempotency locks.
 
@@ -187,9 +187,9 @@ Executes a secure, ACID-compliant transfer between two accounts.
 
 ---
 
-## 👨‍💻 Author
+##  Author
 
 **Arshpreet Singh**
-* 💼 **LinkedIn:** [linkedin.com/in/arshpreet-singh-56089531a](https://linkedin.com/in/arshpreet-singh-56089531a)
-* 🐙 **GitHub:** [github.com/Arshpreet-Singh-2005](https://github.com/Arshpreet-Singh-2005)
-* ✉️ **Email:** sarshpreet653@gmail.com
+*  **LinkedIn:** [linkedin.com/in/arshpreet-singh-56089531a](https://linkedin.com/in/arshpreet-singh-56089531a)
+*  **GitHub:** [github.com/Arshpreet-Singh-2005](https://github.com/Arshpreet-Singh-2005)
+*  **Email:** sarshpreet653@gmail.com
