@@ -17,12 +17,12 @@ A production-grade REST API simulating a core banking backend. LedgerCore handle
 
 ##  Key Features
 
-* ** Double-Entry Ledger** — Every financial movement creates immutable `DEBIT` and `CREDIT` records, ensuring a non-repudiable audit trail.
-* ** ACID Transactions** — Transfer operations are wrapped in atomic transaction blocks. If any step fails (e.g., validation, server crash), the entire operation rolls back.
-* ** Concurrency Safe (Row-Level Locking)** — Utilizes `SELECT ... FOR UPDATE` with ordered ID locking to prevent race conditions (double-spending) and deadlocks during simultaneous transfers.
-* ** Integer Currency Handling** — All balances are stored as integers (paise/cents) rather than floats to eliminate floating-point precision errors.
-* ** Idempotency** — API supports `idempotency_key` checks on transfers, preventing duplicate transactions if a client retries a network request.
-* ** JWT Authentication** — Secure stateless authentication routing ensuring users can only interact with their own accounts.
+* **Double-Entry Ledger** — Every financial movement creates immutable `DEBIT` and `CREDIT` records, ensuring a non-repudiable audit trail.
+* **ACID Transactions** — Transfer operations are wrapped in atomic transaction blocks. If any step fails (e.g., validation, server crash), the entire operation rolls back.
+* **Concurrency Safe (Row-Level Locking)** — Utilizes `SELECT ... FOR UPDATE` with ordered ID locking to prevent race conditions (double-spending) and deadlocks during simultaneous transfers.
+* **Integer Currency Handling** — All balances are stored as integers (paise/cents) rather than floats to eliminate floating-point precision errors.
+* **Idempotency** — API supports `idempotency_key` checks on transfers, preventing duplicate transactions if a client retries a network request.
+* **JWT Authentication** — Secure stateless authentication routing ensuring users can only interact with their own accounts.
 
 ---
 
