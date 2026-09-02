@@ -68,17 +68,18 @@ sequenceDiagram
 ```text
 LedgerCore/
 ├── app/
+|   ├── __init__.py          # Marks app/ as a package
 │   ├── main.py              # FastAPI application setup & routing
 │   ├── models.py            # SQLAlchemy ORM models (Users, Accounts, Ledger)
 │   ├── database.py          # PostgreSQL connection & session management
 │   ├── auth.py              # JWT hashing & token verification logic
-│   └── schemas.py           # Pydantic models for request/response validation
+│   ├── deps.py              # Auth dependency + account-
+|   └── schemas.py           # Pydantic models for request/response validation
 ├── tests/
+|   ├── __init__.py          # Marks tests/ as a package
 │   ├── conftest.py          # Pytest fixtures (DB setup/teardown for tests)
 │   ├── test_auth.py         # Unit tests for registration and login
 │   └── test_transfers.py    # Concurrency, insufficient funds, & idempotency tests
-├── docker-compose.yml       # Multi-container orchestration (API + Postgres)
-├── Dockerfile               # API image build instructions
 ├── requirements.txt         # Python dependencies
 └── README.md                # Project documentation
 ```
@@ -122,21 +123,39 @@ erDiagram
 
 ---
 
-##  Local Setup (Docker)
-
-The easiest way to run LedgerCore is via Docker, which automatically spins up the FastAPI server alongside a fully configured PostgreSQL database.
-
-**1. Clone the repository**
+## Getting Started
+ 
+### Prerequisites
+ 
+- Python 3.10+
+- `pip`
+### 1. Clone the repository
+ 
 ```bash
 git clone https://github.com/Arshpreet-Singh-2005/LedgerCore.git
 cd LedgerCore
 ```
-
-**2. Build and start the containers**
+ 
+### 2. Create a virtual environment and install dependencies
+ 
 ```bash
-docker compose up --build
+python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
+ 
+pip install -r requirements.txt
 ```
-*The API is now running at `http://localhost:8000`.*
+ 
+### 3. Run the server
+ 
+```bash
+uvicorn app.main:app --reload
+```
+ 
+The API is now running at `http://localhost:8000`, with interactive docs at `http://localhost:8000/docs`.
+ 
+By default LedgerCore uses a local SQLite database (`ledger.db`) — no extra setup needed. See [Configuration](#configuration) to point it at PostgreSQL instead.
+ 
+---
 
 ---
 
@@ -149,6 +168,18 @@ LedgerCore includes a comprehensive Pytest suite validating edge cases like insu
 pytest tests/ -v
 ```
 
+---
+---
+ 
+## Configuration
+ 
+LedgerCore reads its config from environment variables (a `.env` file works if you load it, e.g. via `python-dotenv` or your shell):
+ 
+| Variable | Default | Description |
+|---|---|---|
+| `DATABASE_URL` | `sqlite:///./ledger.db` | Any SQLAlchemy-compatible connection string. Set this to a PostgreSQL URL (e.g. `postgresql://user:pass@localhost:5432/ledgercore`) for real row-level locking. |
+| `SECRET_KEY` | `dev-only-secret-change-me` | JWT signing secret. **Must** be overridden with a strong random value outside local development. |
+ 
 ---
 
 ##  API Reference
@@ -186,7 +217,20 @@ Executes a secure, ACID-compliant transfer between two accounts.
 ```
 
 ---
-
+### Other endpoints
+ 
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/auth/signup` | Create a user, returns a JWT |
+| `POST` | `/auth/login` | Log in, returns a JWT |
+| `POST` | `/accounts` | Create an account for the current user |
+| `GET` | `/accounts/{id}` | Fetch an owned account |
+| `GET` | `/accounts/{id}/transactions` | List ledger entries for an owned account |
+| `POST` | `/accounts/{id}/deposit` | Deposit into an owned account |
+| `POST` | `/accounts/{id}/withdraw` | Withdraw from an owned account |
+| `GET` | `/health` | Liveness check |
+ 
+---
 ##  Author
 
 **Arshpreet Singh**
