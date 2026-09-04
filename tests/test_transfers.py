@@ -2,8 +2,6 @@ import pytest
 from app import models
 from app.auth import hash_password
 import concurrent.futures
-from fastapi.testclient import TestClient
-from app.main import app
 @pytest.fixture
 def setup_accounts(client, db_session, test_user, auth_headers):
     """Helper fixture to create two accounts and fund the sender."""
@@ -89,51 +87,45 @@ def test_idempotency_prevents_double_spend(client, setup_accounts, auth_headers,
     sender = db_session.query(models.Account).filter_by(id=sender_id).first()
     assert sender.balance_minor == 90000 # ₹1000 - ₹100 = ₹900
 
-from app.database import get_db
-@pytest.mark.skip(reason="Windows SQLite C-driver segfaults under raw threading.")
 def test_concurrent_transfers_prevent_double_spend(client, setup_accounts, auth_headers, db_session):
+    """
+    Fires 5 concurrent transfer requests of the full sender balance at the
+    same receiver. Exactly one should succeed (first to acquire the lock);
+    the rest must see the now-lower balance and correctly reject as
+    insufficient funds — never double-spend the same money.
+    """
     sender_id, receiver_id = setup_accounts
-    
-    # Grab the safe DB generator from the main client
-    get_db_override = client.app.dependency_overrides[get_db]
 
     def make_transfer(req_id):
         payload = {
             "from_account_id": sender_id,
             "to_account_id": receiver_id,
             "amount": 1000.00,
-            "idempotency_key": f"concurrent-key-{req_id}" 
+            "idempotency_key": f"concurrent-key-{req_id}",
         }
-        # 1. Create a fresh TestClient per thread
-        thread_client = TestClient(app)
-        # 2. Tell this specific thread to use the test database
-        thread_client.app.dependency_overrides[get_db] = get_db_override
-        
-        return thread_client.post("/transfer", json=payload, headers=auth_headers)
+        return client.post("/transfer", json=payload, headers=auth_headers)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         futures = [executor.submit(make_transfer, i) for i in range(5)]
-        
-        success_count = 0
-        for f in concurrent.futures.as_completed(futures):
-            try:
-                response = f.result()
-                if response.status_code == 200:
-                    success_count += 1
-            except Exception:
-                # SQLite cannot handle true concurrent writes like PostgreSQL.
-                # It will violently crash the SQLAlchemy session rather than queueing politely.
-                # We catch and ignore these engine crashes.
-                pass
-                
-    # 1. Exactly ONE transaction should have succeeded
-    assert success_count == 1
-    
+        responses = [f.result() for f in concurrent.futures.as_completed(futures)]
+
+    success_count = sum(1 for r in responses if r.status_code == 200)
+    rejected_count = sum(1 for r in responses if r.status_code == 400)
+
+    # Exactly ONE transfer should have succeeded; the rest correctly
+    # rejected once the (now serialized) balance check saw insufficient funds.
+    assert success_count == 1, f"Expected exactly 1 success, got {success_count}: {[r.status_code for r in responses]}"
+    assert rejected_count == 4
+    assert success_count + rejected_count == 5
+
+    # Sender owns their account, so this is fine over the API. The receiver
+    # account belongs to a *different* user (deliberately, to test
+    # cross-account transfers) — testuser's token can't read it via the
+    # API by design (ownership check), so verify it directly via the DB
+    # instead, same as the original version of this test did.
+    final_sender = client.get(f"/accounts/{sender_id}", headers=auth_headers).json()
+    assert final_sender["balance_minor"] == 0
+
     db_session.expire_all()
-    
-    # 2. Verify the final database balances to prove no double-spending occurred
-    sender = db_session.query(models.Account).filter_by(id=sender_id).first()
     receiver = db_session.query(models.Account).filter_by(id=receiver_id).first()
-    
-    assert sender.balance_minor == 0        
     assert receiver.balance_minor == 100000
