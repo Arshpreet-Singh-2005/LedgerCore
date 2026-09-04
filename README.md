@@ -6,7 +6,6 @@
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 A production-grade REST API simulating a core banking backend. LedgerCore handles secure user authentication, account management, and concurrent money transfers with financial-grade data integrity.
@@ -71,15 +70,14 @@ LedgerCore/
 |   ├── __init__.py          # Marks app/ as a package
 │   ├── main.py              # FastAPI application setup & routing
 │   ├── models.py            # SQLAlchemy ORM models (Users, Accounts, Ledger)
-│   ├── database.py          # PostgreSQL connection & session management
+│   ├── database.py          # DB engine/session management (SQLite by default, Postgres via DATABASE_URL)
 │   ├── auth.py              # JWT hashing & token verification logic
 │   ├── deps.py              # Auth dependency + account-
 |   └── schemas.py           # Pydantic models for request/response validation
 ├── tests/
 |   ├── __init__.py          # Marks tests/ as a package
 │   ├── conftest.py          # Pytest fixtures (DB setup/teardown for tests)
-│   ├── test_auth.py         # Unit tests for registration and login
-│   └── test_transfers.py    # Concurrency, insufficient funds, & idempotency tests
+│   └── test_transfers.py    # Successful transfer, insufficient funds, idempotency, and concurrency tests
 ├── requirements.txt         # Python dependencies
 └── README.md                # Project documentation
 ```
@@ -161,14 +159,12 @@ By default LedgerCore uses a local SQLite database (`ledger.db`) — no extra se
 
 ##  Running the Test Suite
 
-LedgerCore includes a comprehensive Pytest suite validating edge cases like insufficient funds, invalid account routing, and idempotency locks.
+LedgerCore includes a Pytest suite covering a successful transfer, insufficient-funds rollback, idempotency-key replay, and — the centerpiece — a multithreaded concurrency test that fires 5 simultaneous transfers of the full balance at the same receiver and asserts exactly one succeeds while the rest correctly reject, with the database left in a consistent state either way.
 
 ```bash
 # Run tests with verbose output
 pytest tests/ -v
 ```
-
----
 ---
  
 ## Configuration
