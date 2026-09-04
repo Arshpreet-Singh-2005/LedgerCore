@@ -71,14 +71,15 @@ LedgerCore/
 |   ├── __init__.py          # Marks app/ as a package
 │   ├── main.py              # FastAPI application setup & routing
 │   ├── models.py            # SQLAlchemy ORM models (Users, Accounts, Ledger)
-│   ├── database.py          # DB engine/session management (SQLite by default, Postgres via DATABASE_URL)
+│   ├── database.py          # PostgreSQL connection & session management
 │   ├── auth.py              # JWT hashing & token verification logic
 │   ├── deps.py              # Auth dependency + account-
 |   └── schemas.py           # Pydantic models for request/response validation
 ├── tests/
 |   ├── __init__.py          # Marks tests/ as a package
 │   ├── conftest.py          # Pytest fixtures (DB setup/teardown for tests)
-│   └── test_transfers.py    # Successful transfer, insufficient funds, idempotency, and concurrency tests
+│   ├── test_auth.py         # Unit tests for registration and login
+│   └── test_transfers.py    # Concurrency, insufficient funds, & idempotency tests
 ├── requirements.txt         # Python dependencies
 └── README.md                # Project documentation
 ```
@@ -160,12 +161,14 @@ By default LedgerCore uses a local SQLite database (`ledger.db`) — no extra se
 
 ##  Running the Test Suite
 
-LedgerCore includes a Pytest suite covering a successful transfer, insufficient-funds rollback, idempotency-key replay, and — the centerpiece — a multithreaded concurrency test that fires 5 simultaneous transfers of the full balance at the same receiver and asserts exactly one succeeds while the rest correctly reject, with the database left in a consistent state either way.
+LedgerCore includes a comprehensive Pytest suite validating edge cases like insufficient funds, invalid account routing, and idempotency locks.
 
 ```bash
 # Run tests with verbose output
 pytest tests/ -v
 ```
+
+---
 ---
  
 ## Configuration
